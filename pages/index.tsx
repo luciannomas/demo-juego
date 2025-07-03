@@ -769,18 +769,7 @@ const Index = () => {
             <span className="mr-2">?</span> Kids' Art Studio
           </h1>
           <div className="flex items-center space-x-3">
-            {/* Toggle de modo oscuro */}
-            <button
-              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="rounded-full p-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              aria-label="Toggle dark mode"
-            >
-              {resolvedTheme === 'dark' ? (
-                <Sun size={20} className="text-yellow-400" />
-              ) : (
-                <Moon size={20} className="text-gray-800" />
-              )}
-            </button>
+            {/* Aquí estaba el botón de modo oscuro, ahora eliminado */}
             <button
               onClick={handleDownloadClick}
               className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded-full flex items-center shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
@@ -814,11 +803,11 @@ const Index = () => {
       <main className="flex-1 flex flex-col items-center justify-center p-4 relative">
         <div
           ref={containerRef}
-          className="relative w-full max-w-7xl h-[calc(100vh-180px)] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 backdrop-blur-sm"
+          className="relative w-full max-w-7xl md:h-[calc(100vh-180px)] h-[40vh] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 backdrop-blur-sm"
         >
           <canvas
             ref={canvasRef}
-            className="w-full h-full bg-white/90 rounded-2xl"
+            className="w-full h-full bg-white/90 rounded-2xl md:max-h-none max-h-[40vh]"
             onMouseDown={tool === "background" ? handleStartSelection : startDrawing}
             onMouseMove={tool === "background" ? handleMoveSelection : draw}
             onMouseUp={tool === "background" ? handleEndSelection : stopDrawing}
@@ -923,6 +912,70 @@ const Index = () => {
                           <Check size={14} className="text-white" />
                         </div>
                       )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* Selector de tamaño de pincel */}
+            <div className="relative">
+              <button
+                onClick={() => setShowBrushSizeDropdown(!showBrushSizeDropdown)}
+                className="bg-white rounded-full shadow-lg p-2 border-2 border-white outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
+                aria-label="Select brush size"
+                data-brush-size-toggle
+                style={{ width: '48px', height: '48px' }}
+              >
+                <Paintbrush size={32} className="text-gray-700" />
+              </button>
+              {showBrushSizeDropdown && (
+                <div 
+                  ref={brushSizeDropdownRef}
+                  className="absolute bottom-full left-0 mb-2 bg-white/90 backdrop-blur-md rounded-xl shadow-xl p-2 w-48 z-50 border border-gray-200"
+                >
+                  <div className="text-xs font-semibold mb-2 text-gray-700 dark:text-black">Brush Size</div>
+                  {brushSizes.map((sizeOption) => (
+                    <div
+                      key={sizeOption.value}
+                      onClick={() => handleBrushSizeClick(sizeOption.value)}
+                      className={`flex items-center justify-between py-1 px-2 rounded-lg cursor-pointer transition-colors dark:text-black ${
+                        brushSize === sizeOption.value ? "bg-blue-100 text-blue-700 dark:bg-blue-200" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      <span className="text-sm">{sizeOption.label}</span>
+                      <Paintbrush size={sizeOption.value * 2} className="text-gray-700" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* Selector de tamaño de goma */}
+            <div className="relative">
+              <button
+                onClick={() => setShowEraserSizeDropdown(!showEraserSizeDropdown)}
+                className="bg-white rounded-full shadow-lg p-2 border-2 border-white outline-none focus:ring-2 focus:ring-red-400 transition-all duration-300 transform hover:scale-110 flex items-center justify-center cursor-pointer"
+                aria-label="Select eraser size"
+                data-eraser-size-toggle
+                style={{ width: '48px', height: '48px' }}
+              >
+                <Eraser size={32} className="text-gray-700" />
+              </button>
+              {showEraserSizeDropdown && (
+                <div 
+                  ref={eraserSizeDropdownRef}
+                  className="absolute bottom-full left-0 mb-2 bg-white/90 backdrop-blur-md rounded-xl shadow-xl p-2 w-48 z-50 border border-gray-200"
+                >
+                  <div className="text-xs font-semibold mb-2 text-gray-700 dark:text-black">Eraser Size</div>
+                  {eraserSizes.map((sizeOption) => (
+                    <div
+                      key={sizeOption.value}
+                      onClick={() => handleEraserSizeClick(sizeOption.value)}
+                      className={`flex items-center justify-between py-1 px-2 rounded-lg cursor-pointer transition-colors dark:text-black ${
+                        eraserSize === sizeOption.value ? "bg-red-100 text-red-700 dark:bg-red-200" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      <span className="text-sm">{sizeOption.label}</span>
+                      <Eraser size={sizeOption.value / 2} className="text-gray-700" />
                     </div>
                   ))}
                 </div>
