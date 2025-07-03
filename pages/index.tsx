@@ -173,8 +173,17 @@ const Index = () => {
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = canvasRef.current;
-      canvas.width = containerRef.current?.clientWidth || 800;
-      canvas.height = window.innerHeight * 0.8;
+      // Obtener el tamaño visual real del contenedor
+      const container = containerRef.current;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      } else {
+        // Fallback si no hay contenedor
+        canvas.width = 800;
+        canvas.height = 600;
+      }
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (ctx) {
         ctx.lineCap = "round";
@@ -183,6 +192,28 @@ const Index = () => {
         initializeCanvas();
       }
     }
+  }, []);
+
+  // Agregar listener para cambios de tamaño de ventana
+  useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current && containerRef.current) {
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        // Reinicializar el canvas con el nuevo tamaño
+        if (ctxRef.current) {
+          ctxRef.current.lineCap = "round";
+          ctxRef.current.lineJoin = "round";
+          initializeCanvas();
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
 
@@ -803,11 +834,11 @@ const Index = () => {
       <main className="flex-1 flex flex-col items-center justify-center p-4 relative">
         <div
           ref={containerRef}
-          className="relative w-full max-w-7xl md:h-[calc(100vh-180px)] h-[40vh] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 backdrop-blur-sm"
+          className="relative w-full max-w-7xl md:h-[calc(100vh-180px)] h-[56vh] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/30 backdrop-blur-sm"
         >
           <canvas
             ref={canvasRef}
-            className="w-full h-full bg-white/90 rounded-2xl md:max-h-none max-h-[40vh]"
+            className="w-full h-full bg-white/90 rounded-2xl md:max-h-none max-h-[56vh]"
             onMouseDown={tool === "background" ? handleStartSelection : startDrawing}
             onMouseMove={tool === "background" ? handleMoveSelection : draw}
             onMouseUp={tool === "background" ? handleEndSelection : stopDrawing}
