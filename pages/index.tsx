@@ -64,6 +64,12 @@ const Index = () => {
   const eraserSizeDropdownRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme, resolvedTheme } = useTheme();
 
+  // Agregar estos estados al inicio del componente Index:
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
 
   const colors: Color[] = [
     { name: "Black", hex: "#000000" },
@@ -669,6 +675,74 @@ const Index = () => {
     };
   }, [tool, color, brushSize, eraserSize, isDrawing]);
 
+  // Inicia la selección
+  const handleStartSelection = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (tool !== "background") return;
+    let x = 0, y = 0;
+    if ('touches' in e && e.touches.length > 0) {
+      const rect = canvasRef.current!.getBoundingClientRect();
+      x = e.touches[0].clientX - rect.left;
+      y = e.touches[0].clientY - rect.top;
+    } else if ('clientX' in e) {
+      const rect = canvasRef.current!.getBoundingClientRect();
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+    }
+    setIsSelecting(true);
+    setSelectionStart({x, y});
+    setSelectionEnd({x, y});
+  };
+
+  // Actualiza la selección
+  const handleMoveSelection = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isSelecting || !selectionStart) return;
+    let x = 0, y = 0;
+    if ('touches' in e && e.touches.length > 0) {
+      const rect = canvasRef.current!.getBoundingClientRect();
+      x = e.touches[0].clientX - rect.left;
+      y = e.touches[0].clientY - rect.top;
+    } else if ('clientX' in e) {
+      const rect = canvasRef.current!.getBoundingClientRect();
+      x = e.clientX - rect.left;
+      y = e.clientY - rect.top;
+    }
+    setSelectionEnd({x, y});
+  };
+
+  // Finaliza la selección y muestra la previsualización
+  const handleEndSelection = () => {
+    if (!isSelecting || !selectionStart || !selectionEnd || !canvasRef.current) {
+      setIsSelecting(false);
+      return;
+    }
+    setIsSelecting(false);
+    const x = Math.min(selectionStart.x, selectionEnd.x);
+    const y = Math.min(selectionStart.y, selectionEnd.y);
+    const w = Math.abs(selectionEnd.x - selectionStart.x);
+    const h = Math.abs(selectionEnd.y - selectionStart.y);
+    if (w < 5 || h < 5) return;
+    const canvas = canvasRef.current;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = w;
+    tempCanvas.height = h;
+    const tempCtx = tempCanvas.getContext('2d')!;
+    tempCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+    setPreviewUrl(tempCanvas.toDataURL('image/png'));
+  };
+
+  const handleDownloadPreview = () => {
+    if (!previewUrl) return;
+    const a = document.createElement('a');
+    a.href = previewUrl;
+    a.download = `kids-art-capture-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setPreviewUrl(null);
+  };
+
+  const handleCancelPreview = () => setPreviewUrl(null);
+
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ 
@@ -745,13 +819,44 @@ const Index = () => {
           <canvas
             ref={canvasRef}
             className="w-full h-full bg-white/90 rounded-2xl"
-            onMouseDown={startDrawing}
-            onMouseMove={draw}
-            onMouseUp={stopDrawing}
-            onMouseLeave={stopDrawing}
+            onMouseDown={tool === "background" ? handleStartSelection : startDrawing}
+            onMouseMove={tool === "background" ? handleMoveSelection : draw}
+            onMouseUp={tool === "background" ? handleEndSelection : stopDrawing}
+            onMouseLeave={tool === "background" ? handleEndSelection : stopDrawing}
+            onTouchStart={tool === "background" ? handleStartSelection : undefined}
+            onTouchMove={tool === "background" ? handleMoveSelection : undefined}
+            onTouchEnd={tool === "background" ? handleEndSelection : undefined}
             onClick={handleCanvasClick}
-            style={{ cursor: tool === "paintbrush" ? "crosshair" : tool === "eraser" ? "cell" : "default" }}
+            style={{ cursor: tool === "background" ? "crosshair" : tool === "paintbrush" ? "crosshair" : tool === "eraser" ? "cell" : "default" }}
           ></canvas>
+          {/* Dibuja el recuadro de selección */}
+          {isSelecting && selectionStart && selectionEnd && (
+            <div
+              style={{
+                position: 'absolute',
+                left: Math.min(selectionStart.x, selectionEnd.x),
+                top: Math.min(selectionStart.y, selectionEnd.y),
+                width: Math.abs(selectionEnd.x - selectionStart.x),
+                height: Math.abs(selectionEnd.y - selectionStart.y),
+                border: '2px dashed #6366f1',
+                background: 'rgba(99,102,241,0.1)',
+                pointerEvents: 'none',
+                zIndex: 20,
+              }}
+            />
+          )}
+          {/* Modal de previsualización */}
+          {previewUrl && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-4 shadow-2xl flex flex-col items-center">
+                <img src={previewUrl} alt="Preview" className="max-w-xs max-h-[60vh] rounded-lg border mb-4" />
+                <div className="flex gap-4">
+                  <button onClick={handleDownloadPreview} className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600">Guardar</button>
+                  <button onClick={handleCancelPreview} className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-bold hover:bg-gray-400">Cancelar</button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg flex items-center space-x-1">
             <ImageIcon size={16} className="text-gray-600" />
             <span className="text-xs text-gray-600">
