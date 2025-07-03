@@ -994,7 +994,7 @@ const Index = () => {
               {showEraserSizeDropdown && (
                 <div 
                   ref={eraserSizeDropdownRef}
-                  className="absolute bottom-full left-0 mb-2 bg-white/90 backdrop-blur-md rounded-xl shadow-xl p-2 w-48 z-50 border border-gray-200"
+                  className="absolute bottom-full -left-16 mb-2 bg-white/90 backdrop-blur-md rounded-xl shadow-xl p-2 w-48 z-50 border border-gray-200"
                 >
                   <div className="text-xs font-semibold mb-2 text-gray-700 dark:text-black">Eraser Size</div>
                   {eraserSizes.map((sizeOption) => (
