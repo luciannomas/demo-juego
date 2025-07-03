@@ -3,6 +3,7 @@ import { Paintbrush, Eraser, Undo, Redo, Save, Image as ImageIcon, PaintBucket, 
 import { toast, Toaster } from "sonner";
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
+//comentario v1.0.0
 
 
 interface DrawingTool {
