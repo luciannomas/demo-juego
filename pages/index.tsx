@@ -814,7 +814,7 @@ const Index = () => {
                   <Download size={20} className="mr-2" />
                 )}
               </span>
-              <span>{isSaving ? "Saving..." : "Save Art"}</span>
+              <span>{isSaving ? "Saving..." : "Save"}</span>
             </button>
             <button
               onClick={handleClearClick}
