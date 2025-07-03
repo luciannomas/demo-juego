@@ -781,7 +781,7 @@ const Index = () => {
       // Fondo oscuro si está en dark mode
       ...(resolvedTheme === 'dark' ? { background: '#18181b' } : {}),
       transition: isGradientLoading ? "none" : "background 0.5s ease-in-out",
-      fontFamily: "'Comic Sans MS', cursive",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     }}>
       <Toaster position="top-center" />
       
